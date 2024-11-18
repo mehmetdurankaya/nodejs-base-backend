@@ -7,12 +7,10 @@ const schema = mongoose.Schema(
       required: true,
     },
     permission: {
-      type: mongoose.SchemaTypes.ObjectId,
-      required: true,
+      type: String,required: true,
     },
     created_by: {
-      type: mongoose.SchemaTypes.ObjectId,
-      required: true,
+      type: mongoose.SchemaTypes.ObjectId
     },
   },
   {
@@ -23,6 +21,15 @@ const schema = mongoose.Schema(
     },
   }
 );
-class RolePrivileges extends mongoose.Model {}
+class RolePrivileges extends mongoose.Model {
+  /**
+   * Remove documents matching the query.
+   * @param {Object} query - The query to find documents to delete.
+   */
+  static async remove(query) {
+    // Correctly call deleteMany on the model itself
+    await this.deleteMany({ role_id: query._id });
+  }
+}
 schema.loadClass(RolePrivileges);
 module.exports = mongoose.model("role_privileges", schema);

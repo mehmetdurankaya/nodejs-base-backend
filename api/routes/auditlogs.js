@@ -6,17 +6,17 @@ const Response = require("../lib/Response");
 const AuditLogs = require("../models/AuditLogs");
 
 
-router.post("/",async(req,res,next)=>{
+router.post("/",async(req,res)=>{
     let body=req.body;
     let query = {};
     let skip=body.skip;
     let limit=body.limit;
 
 try {
-    if(typeof skip!=="numeric"){
+    if(typeof skip!=="number"){
         skip=0;
     }
-    if(typeof body.limit!=="numeric"||body.limit>500){
+    if(typeof body.limit!=="number"||body.limit>500){
         limit=500;
     }
     if(body.begin_date && body.end_date){

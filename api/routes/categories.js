@@ -12,6 +12,7 @@ const logger=require("../lib/logger/LoggerClass");
 
 
 /* GET users listing. */
+// eslint-disable-next-line no-unused-vars
 router.get("/",async(req, res, next)=> {
   try{
     let categories = await Categories.find({})

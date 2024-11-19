@@ -9,7 +9,8 @@ const Enum = require("../config/Enum");
 const mongoose = require("mongoose");
 const role_privileges = require("../config/role_privileges");
 const auth= require("../lib/auth")();
-
+const config = require("../config/config");
+const i18n=new(require("../lib/i18n"))(config.DEFAULT_LANG);
 
 
 
@@ -30,32 +31,36 @@ router.get("/",auth.checkRoles("roles_view") ,async(req,res)=>{
         res.status(errorResponse.code).json(errorResponse)
     }
 });
-router.post("/add",auth.checkRoles("roles_add") ,async(req,res)=>{
-      let body = req.body;
+router.post("/add", auth.checkRoles("role_add"), async (req, res) => {
+    let body = req.body;
     try {
-        if(!body.role_name){
-            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation Error!","Validation role_name field must be filled ")}
-        if(!body.permissions || !Array.isArray(body.permissions) || body.permissions.length==0){
-            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation Error!", "permissions field must be an Array");
+
+        if (!body.role_name) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, i18n.translate("COMMON.VALIDATION_ERROR_TITLE", req.user.language),i18n.translate("COMMON.FIELD_MUST_BE_FILLED", req.user.language, ["role_name"]));
+        if (!body.permissions || !Array.isArray(body.permissions) || body.permissions.length == 0) {
+            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, i18n.translate("COMMON.VALIDATION_ERROR_TITLE", req.user.language),i18n.translate("COMMON.FIELD_MUST_BE_TYPE", req.user.language, ["permissions", "Array"]));
         }
-        let role= new Roles({
-            role_name:body.role_name,
-            is_active:true,
-            created_by:req.user?.id
+
+        let role = new Roles({
+            role_name: body.role_name,
+            is_active: true,
+            created_by: req.user?.id
         });
 
         await role.save();
 
-        for(let i=0;i<body.permissions.length;i++){
-            let priv= new RolePrivileges({
-                role_id:role._id,
-                permission:body.permissions[i],
-                created_by:req.user?.id
+        for (let i = 0; i < body.permissions.length; i++) {
+            let priv = new RolePrivileges({
+                role_id: role._id,
+                permission: body.permissions[i],
+                created_by: req.user?.id
             });
+
             await priv.save();
         }
-        
-        res.json(Response.successResponse({success:true}));
+
+
+        res.json(Response.successResponse({ success: true }));
+
     } catch (err) {
         let errorResponse = Response.errorResponse(err);
         res.status(errorResponse.code).json(errorResponse);
@@ -68,7 +73,7 @@ router.put("/update",auth.checkRoles("roles_update") ,async (req, res) => {
         // Güncellenecek alanlar için kontrol
         let updates = {};
         if (!body._id) {
-            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation Error!", "Validation _id field must be filled");
+            throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, i18n.translate("COMMON.VALIDATION_ERROR_TITLE", req.user.language), i18n.translate("COMMON.FIELD_MUST_BE_FILLED", req.user.language, ["_id"]));
         }
 
         if (body.role_name) {
@@ -119,46 +124,26 @@ router.put("/update",auth.checkRoles("roles_update") ,async (req, res) => {
 });
 
 router.delete("/delete",auth.checkRoles("roles_delete") ,async (req, res) => {
-    const { _id } = req.body;
-
+    let body = req.body;
     try {
-        // _id doğrulama
-        if (!_id) {
-            throw new CustomError(
-                Enum.HTTP_CODES.BAD_REQUEST,
-                "Validation Error!",
-                "_id field must be filled"
-            );
-        }
-        if (!mongoose.Types.ObjectId.isValid(_id)) {
-            throw new CustomError(
-                Enum.HTTP_CODES.BAD_REQUEST,
-                "Validation Error!",
-                "_id is not a valid ObjectId"
-            );
-        }
 
-        // İlgili role ve onun role_privileges'lerini sil
-        await RolePrivileges.deleteMany({ role_id: _id }); // Role ile ilgili tüm izinleri sil
-        const result = await Roles.deleteOne({ _id }); // Role'u sil
+        if (!body._id) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, i18n.translate("COMMON.VALIDATION_ERROR_TITLE", req.user.language),i18n.translate("COMMON.FIELD_MUST_BE_FILLED", req.user.language, ["_id"]));
 
-        if (result.deletedCount === 0) {
-            throw new CustomError(
-                Enum.HTTP_CODES.NOT_FOUND,
-                "Delete Error!",
-                "No role found with the given _id"
-            );
-        }
+        await Roles.remove({ _id: body._id });
 
         res.json(Response.successResponse({ success: true }));
+
     } catch (err) {
-        const errorResponse = Response.errorResponse(err);
+        let errorResponse = Response.errorResponse(err);
         res.status(errorResponse.code).json(errorResponse);
     }
 });
 
+router.get("/role_privileges", async (req, res) => {
+    res.json(role_privileges);
+})
 
 router.get("/role_privileges", async (req, res )=>{
     res.json(role_privileges);
-})
+});
 module.exports= router;

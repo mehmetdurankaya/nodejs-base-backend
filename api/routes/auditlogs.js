@@ -37,7 +37,7 @@ try {
     let auditLogs = await AuditLogs.find(query).sort({createdAt:-1}).skip(skip).limit(limit);
     res.json(Response.successResponse(auditLogs));
 } catch (err) {
-    let errorResponse = Response.errorResponse(err);
+    let errorResponse = Response.errorResponse(err,req.user?.language);
     res.status(errorResponse.code).json(errorResponse);
 }
 })

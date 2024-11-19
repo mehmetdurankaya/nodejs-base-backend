@@ -2,11 +2,15 @@ const express = require("express");
 const router = express.Router();
 const dayjs=require("dayjs");
 
+const auth= require("../lib/auth")();
 const Response = require("../lib/Response");
 const AuditLogs = require("../models/AuditLogs");
 
 
-router.post("/",async(req,res)=>{
+router.all("*",auth.authenticate(),(req,res,next)=>{
+    next();
+})
+router.post("/",auth.checkRoles("auditlogs_view"),async(req,res)=>{
     let body=req.body;
     let query = {};
     let skip=body.skip;

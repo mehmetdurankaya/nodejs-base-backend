@@ -8,7 +8,20 @@ const CustomError = require("../lib/Error");
 const Enum = require("../config/Enum");
 const mongoose = require("mongoose");
 const role_privileges = require("../config/role_privileges");
-router.get("/", async(req,res)=>{
+const auth= require("../lib/auth")();
+
+
+
+
+
+router.all("*",auth.authenticate(),(req,res,next)=>{
+    next();
+})
+
+
+
+
+router.get("/",auth.checkRoles("roles_view") ,async(req,res)=>{
     try {
         let roles= await Roles.find({})
         res.json(Response.successResponse(roles));
@@ -17,7 +30,7 @@ router.get("/", async(req,res)=>{
         res.status(errorResponse.code).json(errorResponse)
     }
 });
-router.post("/add", async(req,res)=>{
+router.post("/add",auth.checkRoles("roles_add") ,async(req,res)=>{
       let body = req.body;
     try {
         if(!body.role_name){
@@ -48,7 +61,7 @@ router.post("/add", async(req,res)=>{
         res.status(errorResponse.code).json(errorResponse);
     }
 });
-router.put("/update", async (req, res) => {
+router.put("/update",auth.checkRoles("roles_update") ,async (req, res) => {
     let body = req.body;
 
     try {
@@ -105,7 +118,7 @@ router.put("/update", async (req, res) => {
     }
 });
 
-router.delete("/delete", async (req, res) => {
+router.delete("/delete",auth.checkRoles("roles_delete") ,async (req, res) => {
     const { _id } = req.body;
 
     try {

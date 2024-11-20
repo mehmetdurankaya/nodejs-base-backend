@@ -96,6 +96,18 @@ module.exports={
             group:"AUDITLOGS",
             description:"AuditLogs View"
         },
+        {
+            key: "category_export",
+            name: "Category Export",
+            group: "CATEGORIES",
+            description: "Category Export"
+        },
+        {
+            key: "auditlogs_view",
+            name: "AuditLogs View",
+            group: "AUDITLOGS",
+            description: "AuditLogs View"
+        }
     
     ]
     
